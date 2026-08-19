@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 0.5rem;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  ::selection {
+    background-color: theme("colors.brand.DEFAULT");
+    color: white;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-xl border border-gray-800 bg-gray-900 p-6 shadow-lg;
+  }
+  .btn-primary {
+    @apply inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold
+           text-white transition hover:bg-brand-dark focus-visible:outline focus-visible:outline-2
+           focus-visible:outline-offset-2 focus-visible:outline-brand disabled:opacity-50;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 rounded-lg border border-gray-700 bg-gray-800
+           px-4 py-2 text-sm font-semibold text-gray-200 transition hover:bg-gray-700
+           focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2
+           focus-visible:outline-brand disabled:opacity-50;
+  }
+  .input {
+    @apply w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-gray-100
+           placeholder-gray-500 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand;
+  }
+  .label {
+    @apply block text-sm font-medium text-gray-300 mb-1;
+  }
+  .badge-active {
+    @apply inline-flex items-center rounded-full bg-emerald-900/40 px-2 py-0.5 text-xs
+           font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/30;
+  }
+  .badge-paused {
+    @apply inline-flex items-center rounded-full bg-yellow-900/40 px-2 py-0.5 text-xs
+           font-medium text-yellow-400 ring-1 ring-inset ring-yellow-500/30;
+  }
+  .badge-expired {
+    @apply inline-flex items-center rounded-full bg-red-900/40 px-2 py-0.5 text-xs
+           font-medium text-red-400 ring-1 ring-inset ring-red-500/30;
+  }
+}

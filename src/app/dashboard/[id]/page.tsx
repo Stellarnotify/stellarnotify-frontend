@@ -5,7 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchSubscription, fetchNotificationsBySubscription } from "@/lib/api";
 import { NotificationFeed } from "@/components/notifications/NotificationFeed";
 import { ChannelBadge } from "@/components/ui/ChannelBadge";
-import { ArrowLeft, Loader2, AlertCircle, ExternalLink } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { ArrowLeft, AlertCircle, ExternalLink } from "lucide-react";
 import Link from "next/link";
 
 function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
@@ -54,12 +55,7 @@ export default function SubscriptionDetailPage({
       </Link>
 
       {/* Loading */}
-      {subLoading && (
-        <div className="flex items-center gap-2 text-gray-400">
-          <Loader2 className="h-5 w-5 animate-spin" />
-          Loading subscription…
-        </div>
-      )}
+      {subLoading && <LoadingSpinner label="Loading subscription…" />}
 
       {/* Error */}
       {subError && (

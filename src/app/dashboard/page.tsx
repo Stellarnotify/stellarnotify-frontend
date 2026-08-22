@@ -8,6 +8,7 @@ import { CreateSubscriptionForm } from "@/components/subscriptions/CreateSubscri
 import { NotificationFeed } from "@/components/notifications/NotificationFeed";
 import { useNotifications } from "@/hooks/useSubscriptions";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Wallet, Bell, Loader2 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -89,11 +90,7 @@ export default function DashboardPage() {
             {subs && <span className="ml-2 text-xs text-gray-500">({subs.length})</span>}
           </h2>
 
-          {isLoading && (
-            <div className="flex items-center gap-2 text-gray-400">
-              <Loader2 className="h-4 w-4 animate-spin" /> Loading subscriptions…
-            </div>
-          )}
+          {isLoading && <LoadingSpinner label="Loading subscriptions…" className="justify-start" />}
 
           {!isLoading && (!subs || subs.length === 0) && (
             <EmptyState

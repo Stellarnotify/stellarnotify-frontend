@@ -4,14 +4,9 @@ import { use } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchSubscription, fetchNotificationsBySubscription } from "@/lib/api";
 import { NotificationFeed } from "@/components/notifications/NotificationFeed";
+import { ChannelBadge } from "@/components/ui/ChannelBadge";
 import { ArrowLeft, Loader2, AlertCircle, ExternalLink } from "lucide-react";
 import Link from "next/link";
-
-const channelLabel: Record<string, string> = {
-  Webhook: "🔗 Webhook",
-  InApp: "📡 In-App (SSE)",
-  OnChain: "⛓ On-Chain",
-};
 
 function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -119,7 +114,7 @@ export default function SubscriptionDetailPage({
                   </span>
                 }
               />
-              <DetailRow label="Channel" value={channelLabel[sub.channel] ?? sub.channel} />
+              <DetailRow label="Channel" value={<ChannelBadge channel={sub.channel} />} />
               <DetailRow
                 label="Endpoint Ref"
                 value={<span className="font-mono text-xs">{sub.endpoint_ref}</span>}

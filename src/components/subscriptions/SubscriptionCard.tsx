@@ -2,6 +2,7 @@
 
 import { Bell, BellOff, Trash2, ExternalLink } from "lucide-react";
 import type { SubscriptionRow } from "@/lib/api";
+import { ChannelBadge } from "@/components/ui/ChannelBadge";
 
 interface Props {
   sub: SubscriptionRow;
@@ -10,12 +11,6 @@ interface Props {
   onResume: (id: string) => void;
   onClick: (id: string) => void;
 }
-
-const channelLabel: Record<string, string> = {
-  Webhook: "🔗 Webhook",
-  InApp: "📡 In-App",
-  OnChain: "⛓ On-Chain",
-};
 
 export function SubscriptionCard({ sub, onCancel, onPause, onResume, onClick }: Props) {
   const isExpired =
@@ -46,7 +41,7 @@ export function SubscriptionCard({ sub, onCancel, onPause, onResume, onClick }: 
             Watching: {sub.watched_contract}
           </p>
           <p className="text-xs text-gray-500">
-            {channelLabel[sub.channel] ?? sub.channel}
+            <ChannelBadge channel={sub.channel} />
             {sub.topics.length > 0 && ` · ${sub.topics.length} topic filter(s)`}
           </p>
         </div>

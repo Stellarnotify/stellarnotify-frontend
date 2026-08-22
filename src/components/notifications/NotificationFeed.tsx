@@ -2,6 +2,8 @@
 
 import type { NotificationRow } from "@/lib/api";
 import { NotificationStatusBadge } from "@/components/ui/NotificationStatusBadge";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Bell } from "lucide-react";
 import { useSSE } from "@/hooks/useSSE";
 import { useState, useEffect } from "react";
 
@@ -46,9 +48,11 @@ export function NotificationFeed({ subscriptionId, initialNotifications }: Props
       </div>
 
       {liveItems.length === 0 && (
-        <p className="text-sm text-gray-500 py-8 text-center">
-          No notifications yet. They will appear here as events are detected.
-        </p>
+        <EmptyState
+          icon={Bell}
+          title="No notifications yet"
+          description="They will appear here as events are detected on-chain."
+        />
       )}
 
       <ul className="space-y-2" role="list" aria-label="Notification feed">

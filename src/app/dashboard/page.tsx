@@ -7,6 +7,7 @@ import { SubscriptionCard } from "@/components/subscriptions/SubscriptionCard";
 import { CreateSubscriptionForm } from "@/components/subscriptions/CreateSubscriptionForm";
 import { NotificationFeed } from "@/components/notifications/NotificationFeed";
 import { useNotifications } from "@/hooks/useSubscriptions";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Wallet, Bell, Loader2 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -95,9 +96,11 @@ export default function DashboardPage() {
           )}
 
           {!isLoading && (!subs || subs.length === 0) && (
-            <div className="card text-center py-10 text-gray-500">
-              No subscriptions yet. Create one to get started.
-            </div>
+            <EmptyState
+              icon={Bell}
+              title="No subscriptions yet"
+              description="Create one to start receiving on-chain event notifications."
+            />
           )}
 
           <ul className="space-y-3">
@@ -123,10 +126,11 @@ export default function DashboardPage() {
               initialNotifications={notifications ?? []}
             />
           ) : (
-            <div className="card flex flex-col items-center justify-center py-16 text-gray-500 text-sm text-center gap-2">
-              <Bell className="h-8 w-8 opacity-30" />
-              Select a subscription to view its notification feed
-            </div>
+            <EmptyState
+              icon={Bell}
+              title="No subscription selected"
+              description="Select a subscription from the list to view its notification feed."
+            />
           )}
         </section>
       </div>

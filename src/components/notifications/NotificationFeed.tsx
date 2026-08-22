@@ -1,16 +1,9 @@
 "use client";
 
-import { CheckCircle2, XCircle, Clock, RefreshCw } from "lucide-react";
 import type { NotificationRow } from "@/lib/api";
+import { NotificationStatusBadge } from "@/components/ui/NotificationStatusBadge";
 import { useSSE } from "@/hooks/useSSE";
 import { useState, useEffect } from "react";
-
-const statusIcon = {
-  delivered: <CheckCircle2 className="h-4 w-4 text-emerald-400" />,
-  failed: <XCircle className="h-4 w-4 text-red-400" />,
-  pending: <Clock className="h-4 w-4 text-yellow-400" />,
-  retrying: <RefreshCw className="h-4 w-4 text-blue-400 animate-spin" />,
-};
 
 interface Props {
   subscriptionId: string;
@@ -63,7 +56,7 @@ export function NotificationFeed({ subscriptionId, initialNotifications }: Props
           <li key={n.id} className="card !p-4 space-y-1">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                {statusIcon[n.status]}
+                <NotificationStatusBadge status={n.status} />
                 <span className="text-xs font-mono text-gray-400 truncate">{n.contract_id}</span>
               </div>
               <span className="text-xs text-gray-600 shrink-0">

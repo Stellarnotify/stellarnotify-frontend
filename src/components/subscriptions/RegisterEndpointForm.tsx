@@ -85,7 +85,7 @@ export function RegisterEndpointForm({ ownerAddress }: Props) {
       {step === "input" && (
         <div className="space-y-4">
           <p className="text-sm text-gray-400">
-            Enter your webhook URL. We'll compute its SHA-256 hash — this hash is
+            Enter your webhook URL. We&apos;ll compute its SHA-256 hash — this hash is
             what gets stored on-chain as your endpoint reference.
           </p>
           <div>

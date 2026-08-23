@@ -10,7 +10,6 @@ import { NotificationFeed } from "@/components/notifications/NotificationFeed";
 import { useNotifications } from "@/hooks/useSubscriptions";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { ErrorBanner } from "@/components/ui/ErrorBanner";
 import { TxToast } from "@/components/ui/TxToast";
 import type { TxToastState } from "@/components/ui/TxToast";
 import { callSubscribe, callCancel, callPause, callResume, callRenew } from "@/lib/stellar";

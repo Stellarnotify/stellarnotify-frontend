@@ -62,6 +62,7 @@ export default function HomePage() {
             href="https://github.com/yourusername/stellarnotify-contract"
             target="_blank"
             rel="noopener noreferrer"
+            aria-label="View StellarNotify on GitHub (opens in new tab)"
             className="btn-secondary text-base px-6 py-3"
           >
             <Code2 className="h-4 w-4" /> View on GitHub

@@ -4,6 +4,7 @@ import { use } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchSubscription, fetchNotificationsBySubscription } from "@/lib/api";
 import { NotificationFeed } from "@/components/notifications/NotificationFeed";
+import { NotificationChart } from "@/components/notifications/NotificationChart";
 import { ChannelBadge } from "@/components/ui/ChannelBadge";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ErrorBanner } from "@/components/ui/ErrorBanner";
@@ -149,6 +150,16 @@ export default function SubscriptionDetailPage({
               />
             </dl>
           </section>
+
+          {/* Notification chart */}
+          {notifications && notifications.length > 0 && (
+            <section className="space-y-3">
+              <h2 className="font-semibold text-gray-200">Deliveries Over Time</h2>
+              <div className="card !p-4">
+                <NotificationChart notifications={notifications} />
+              </div>
+            </section>
+          )}
 
           {/* Notification feed */}
           <section className="space-y-4">

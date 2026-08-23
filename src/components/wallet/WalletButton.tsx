@@ -1,7 +1,10 @@
 "use client";
 
-import { Wallet, LogOut, Loader2 } from "lucide-react";
+import { Wallet, LogOut, Loader2, ExternalLink } from "lucide-react";
 import { useWallet } from "@/hooks/useWallet";
+
+const FREIGHTER_INSTALL_URL =
+  "https://www.freighter.app/";
 
 function truncate(addr: string) {
   return `${addr.slice(0, 5)}…${addr.slice(-4)}`;
@@ -32,6 +35,27 @@ export function WalletButton() {
         >
           <LogOut className="h-4 w-4" />
         </button>
+      </div>
+    );
+  }
+
+  // Freighter not installed — show install link
+  if (error === "FREIGHTER_NOT_INSTALLED") {
+    return (
+      <div className="flex flex-col items-end gap-1">
+        <a
+          href={FREIGHTER_INSTALL_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn-primary text-xs"
+          aria-label="Install Freighter wallet extension"
+        >
+          <ExternalLink className="h-3.5 w-3.5" />
+          Install Freighter
+        </a>
+        <p className="text-xs text-gray-500 max-w-[180px] text-right">
+          Freighter browser extension required
+        </p>
       </div>
     );
   }

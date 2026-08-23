@@ -5,6 +5,7 @@ import { useWallet } from "@/hooks/useWallet";
 import { useSubscriptions } from "@/hooks/useSubscriptions";
 import { SubscriptionCard } from "@/components/subscriptions/SubscriptionCard";
 import { CreateSubscriptionForm } from "@/components/subscriptions/CreateSubscriptionForm";
+import { RegisterEndpointForm } from "@/components/subscriptions/RegisterEndpointForm";
 import { NotificationFeed } from "@/components/notifications/NotificationFeed";
 import { useNotifications } from "@/hooks/useSubscriptions";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -108,7 +109,10 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-bold">Dashboard</h1>
           <p className="text-sm text-gray-400 font-mono mt-1">{address}</p>
         </div>
-        <CreateSubscriptionForm onSubmit={handleCreate} />
+        <div className="flex items-center gap-2">
+          <RegisterEndpointForm ownerAddress={address} />
+          <CreateSubscriptionForm onSubmit={handleCreate} />
+        </div>
       </div>
 
       {/* TX error */}

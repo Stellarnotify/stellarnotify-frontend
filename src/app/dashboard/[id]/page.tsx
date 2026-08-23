@@ -8,6 +8,7 @@ import { NotificationChart } from "@/components/notifications/NotificationChart"
 import { ChannelBadge } from "@/components/ui/ChannelBadge";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ErrorBanner } from "@/components/ui/ErrorBanner";
+import { ExpiryCountdown } from "@/components/subscriptions/ExpiryCountdown";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import Link from "next/link";
 
@@ -143,6 +144,10 @@ export default function SubscriptionDetailPage({
                     sub.expires_at_ledger.toLocaleString()
                   )
                 }
+              />
+              <DetailRow
+                label="Time Remaining"
+                value={<ExpiryCountdown expiresAtLedger={sub.expires_at_ledger} />}
               />
               <DetailRow
                 label="Last Synced"

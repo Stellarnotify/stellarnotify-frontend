@@ -3,6 +3,7 @@
 import { Bell, BellOff, Trash2, ExternalLink } from "lucide-react";
 import type { SubscriptionRow } from "@/lib/api";
 import { ChannelBadge } from "@/components/ui/ChannelBadge";
+import { ExpiryCountdown } from "@/components/subscriptions/ExpiryCountdown";
 
 interface Props {
   sub: SubscriptionRow;
@@ -44,6 +45,7 @@ export function SubscriptionCard({ sub, onCancel, onPause, onResume, onClick }: 
             <ChannelBadge channel={sub.channel} />
             {sub.topics.length > 0 && ` · ${sub.topics.length} topic filter(s)`}
           </p>
+          <ExpiryCountdown expiresAtLedger={sub.expires_at_ledger} />
         </div>
 
         {/* Actions */}

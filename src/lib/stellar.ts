@@ -179,3 +179,75 @@ export async function callCancel(params: {
 
   throw new Error(`Transaction not confirmed after timeout: ${hash}`);
 }
+
+// ── Shared poll helper ────────────────────────────────────────────────────
+
+/** Sign, submit, and poll a pre-assembled transaction XDR. Returns tx hash. */
+async function signSubmitAndPoll(assembledXdr: string): Promise<string> {
+  const signedXdr = await signTx(assembledXdr, NETWORK_PASSPHRASE);
+
+  const sendResult = await rpc.sendTransaction(
+    TransactionBuilder.fromXDR(signedXdr, NETWORK_PASSPHRASE)
+  );
+
+  if (sendResult.status === "ERROR") {
+    throw new Error(`Submit failed: ${JSON.stringify(sendResult.errorResult)}`);
+  }
+
+  const hash = sendResult.hash;
+  for (let i = 0; i < 20; i++) {
+    await new Promise((r) => setTimeout(r, 3000));
+    const status = await rpc.getTransaction(hash);
+    if (status.status === SorobanRpc.Api.GetTransactionStatus.SUCCESS) return hash;
+    if (status.status === SorobanRpc.Api.GetTransactionStatus.FAILED) {
+      throw new Error(`Transaction failed: ${hash}`);
+    }
+  }
+  throw new Error(`Transaction not confirmed after timeout: ${hash}`);
+}
+
+// ── pause_sub() ───────────────────────────────────────────────────────────
+
+export async function callPause(params: {
+  callerAddress: string;
+  subscriptionId: string;
+}): Promise<string> {
+  const { callerAddress, subscriptionId } = params;
+
+  const operation = contract.call(
+    "pause_sub",
+    new Address(callerAddress).toScVal(),
+    nativeToScVal(subscriptionId, { type: "u64" })
+  );
+
+  const tx = await buildTx(callerAddress, operation);
+  const sim = await rpc.simulateTransaction(tx);
+  if (SorobanRpc.Api.isSimulationError(sim)) {
+    throw new Error(`Simulation failed: ${sim.error}`);
+  }
+  const assembled = SorobanRpc.assembleTransaction(tx, sim).build();
+  return signSubmitAndPoll(assembled.toXDR());
+}
+
+// ── resume_sub() ──────────────────────────────────────────────────────────
+
+export async function callResume(params: {
+  callerAddress: string;
+  subscriptionId: string;
+}): Promise<string> {
+  const { callerAddress, subscriptionId } = params;
+
+  const operation = contract.call(
+    "resume_sub",
+    new Address(callerAddress).toScVal(),
+    nativeToScVal(subscriptionId, { type: "u64" })
+  );
+
+  const tx = await buildTx(callerAddress, operation);
+  const sim = await rpc.simulateTransaction(tx);
+  if (SorobanRpc.Api.isSimulationError(sim)) {
+    throw new Error(`Simulation failed: ${sim.error}`);
+  }
+  const assembled = SorobanRpc.assembleTransaction(tx, sim).build();
+  return signSubmitAndPoll(assembled.toXDR());
+}

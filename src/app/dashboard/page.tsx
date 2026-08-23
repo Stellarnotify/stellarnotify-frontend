@@ -10,7 +10,7 @@ import { useNotifications } from "@/hooks/useSubscriptions";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ErrorBanner } from "@/components/ui/ErrorBanner";
-import { callSubscribe, callCancel } from "@/lib/stellar";
+import { callSubscribe, callCancel, callPause, callResume } from "@/lib/stellar";
 import { Wallet, Bell, Loader2 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -51,13 +51,27 @@ export default function DashboardPage() {
     }
   }, [address, refetch]);
 
-  const handlePause = useCallback((id: string) => {
-    alert(`TODO: call contract pause_sub(${id})`);
-  }, []);
+  const handlePause = useCallback(async (id: string) => {
+    if (!address) return;
+    setTxError(null);
+    try {
+      await callPause({ callerAddress: address, subscriptionId: id });
+      await refetch();
+    } catch (err: unknown) {
+      setTxError(err instanceof Error ? err.message : "Pause failed");
+    }
+  }, [address, refetch]);
 
-  const handleResume = useCallback((id: string) => {
-    alert(`TODO: call contract resume_sub(${id})`);
-  }, []);
+  const handleResume = useCallback(async (id: string) => {
+    if (!address) return;
+    setTxError(null);
+    try {
+      await callResume({ callerAddress: address, subscriptionId: id });
+      await refetch();
+    } catch (err: unknown) {
+      setTxError(err instanceof Error ? err.message : "Resume failed");
+    }
+  }, [address, refetch]);
 
   if (!address) {
     return (

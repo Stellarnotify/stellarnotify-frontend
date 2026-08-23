@@ -6,7 +6,8 @@ import { fetchSubscription, fetchNotificationsBySubscription } from "@/lib/api";
 import { NotificationFeed } from "@/components/notifications/NotificationFeed";
 import { ChannelBadge } from "@/components/ui/ChannelBadge";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { ArrowLeft, AlertCircle, ExternalLink } from "lucide-react";
+import { ErrorBanner } from "@/components/ui/ErrorBanner";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 import Link from "next/link";
 
 function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
@@ -59,15 +60,9 @@ export default function SubscriptionDetailPage({
 
       {/* Error */}
       {subError && (
-        <div className="card flex items-start gap-3 border-red-800 bg-red-950/30">
-          <AlertCircle className="h-5 w-5 text-red-400 shrink-0 mt-0.5" />
-          <div>
-            <p className="font-semibold text-red-300">Failed to load subscription</p>
-            <p className="text-sm text-red-400 mt-1">
-              {subError instanceof Error ? subError.message : "Unknown error"}
-            </p>
-          </div>
-        </div>
+        <ErrorBanner
+          message={subError instanceof Error ? subError.message : "Failed to load subscription"}
+        />
       )}
 
       {sub && (

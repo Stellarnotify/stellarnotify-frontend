@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Search, Loader2 } from "lucide-react";
 import { fetchSubscriptionsByOwner } from "@/lib/api";
 import { SubscriptionCard } from "@/components/subscriptions/SubscriptionCard";
+import { ErrorBanner } from "@/components/ui/ErrorBanner";
 import type { SubscriptionRow } from "@/lib/api";
 
 export default function ExplorerPage() {
@@ -50,7 +51,12 @@ export default function ExplorerPage() {
         </button>
       </form>
 
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && (
+        <ErrorBanner
+          message={error}
+          onDismiss={() => setError(null)}
+        />
+      )}
 
       {results !== null && (
         <div className="space-y-3">

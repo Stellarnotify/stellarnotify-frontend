@@ -4,6 +4,7 @@ import { Bell, BellOff, Trash2, ExternalLink } from "lucide-react";
 import type { SubscriptionRow } from "@/lib/api";
 import { ChannelBadge } from "@/components/ui/ChannelBadge";
 import { ExpiryCountdown } from "@/components/subscriptions/ExpiryCountdown";
+import { CopyButton } from "@/components/ui/CopyButton";
 
 interface Props {
   sub: SubscriptionRow;
@@ -37,6 +38,7 @@ export function SubscriptionCard({ sub, onCancel, onPause, onResume, onClick }: 
           <div className="flex items-center gap-2">
             {statusBadge}
             <span className="text-xs text-gray-500 font-mono">#{sub.id}</span>
+            <CopyButton text={sub.id} label="Copy subscription ID" />
           </div>
           <p className="text-sm text-gray-300 font-mono truncate">
             Watching: {sub.watched_contract}

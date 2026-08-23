@@ -10,6 +10,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ErrorBanner } from "@/components/ui/ErrorBanner";
 import { ExpiryCountdown } from "@/components/subscriptions/ExpiryCountdown";
 import { ArrowLeft, ExternalLink } from "lucide-react";
+import { CopyButton } from "@/components/ui/CopyButton";
 import Link from "next/link";
 
 function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
@@ -73,7 +74,10 @@ export default function SubscriptionDetailPage({
           <div className="flex items-start justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold">Subscription Detail</h1>
-              <p className="text-sm font-mono text-gray-400 mt-1">#{sub.id}</p>
+              <div className="flex items-center gap-1 mt-1">
+                <p className="text-sm font-mono text-gray-400">#{sub.id}</p>
+                <CopyButton text={sub.id} label="Copy subscription ID" />
+              </div>
             </div>
             <div>
               {sub.active ? (
@@ -95,6 +99,7 @@ export default function SubscriptionDetailPage({
                 value={
                   <span className="flex items-center gap-2">
                     <span className="font-mono">{sub.watched_contract}</span>
+                    <CopyButton text={sub.watched_contract} label="Copy contract address" />
                     <a
                       href={`https://stellar.expert/explorer/testnet/contract/${sub.watched_contract}`}
                       target="_blank"

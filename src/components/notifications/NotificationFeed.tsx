@@ -3,6 +3,7 @@
 import type { NotificationRow } from "@/lib/api";
 import { NotificationStatusBadge } from "@/components/ui/NotificationStatusBadge";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { useAnnouncer } from "@/components/ui/LiveAnnouncer";
 import { Bell } from "lucide-react";
 import { useSSE } from "@/hooks/useSSE";
 import { useState, useEffect } from "react";
@@ -14,6 +15,7 @@ interface Props {
 
 export function NotificationFeed({ subscriptionId, initialNotifications }: Props) {
   const { latest, connected } = useSSE(subscriptionId);
+  const { announce } = useAnnouncer();
   const [liveItems, setLiveItems] = useState<NotificationRow[]>(initialNotifications);
 
   // Prepend live SSE notifications to the feed.
@@ -33,7 +35,8 @@ export function NotificationFeed({ subscriptionId, initialNotifications }: Props
       last_error: null,
     };
     setLiveItems((prev) => [liveRow, ...prev]);
-  }, [latest, subscriptionId]);
+    announce(`New notification from contract ${latest.contractId}`);
+  }, [latest, subscriptionId, announce]);
 
   return (
     <div className="space-y-3">

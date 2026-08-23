@@ -10,7 +10,7 @@ import { useNotifications } from "@/hooks/useSubscriptions";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ErrorBanner } from "@/components/ui/ErrorBanner";
-import { callSubscribe } from "@/lib/stellar";
+import { callSubscribe, callCancel } from "@/lib/stellar";
 import { Wallet, Bell, Loader2 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -40,9 +40,16 @@ export default function DashboardPage() {
     [address, refetch]
   );
 
-  const handleCancel = useCallback((id: string) => {
-    alert(`TODO: call contract cancel(${id})`);
-  }, []);
+  const handleCancel = useCallback(async (id: string) => {
+    if (!address) return;
+    setTxError(null);
+    try {
+      await callCancel({ callerAddress: address, subscriptionId: id });
+      await refetch();
+    } catch (err: unknown) {
+      setTxError(err instanceof Error ? err.message : "Cancel failed");
+    }
+  }, [address, refetch]);
 
   const handlePause = useCallback((id: string) => {
     alert(`TODO: call contract pause_sub(${id})`);

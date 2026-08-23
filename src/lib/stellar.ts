@@ -132,3 +132,50 @@ export async function callSubscribe(params: {
 
   throw new Error(`Transaction not confirmed after timeout: ${hash}`);
 }
+
+/**
+ * Build, simulate, sign (Freighter), and submit a cancel() call.
+ * Returns the transaction hash on success.
+ */
+export async function callCancel(params: {
+  callerAddress: string;
+  subscriptionId: string;
+}): Promise<string> {
+  const { callerAddress, subscriptionId } = params;
+
+  const operation = contract.call(
+    "cancel",
+    new Address(callerAddress).toScVal(),
+    nativeToScVal(subscriptionId, { type: "u64" })
+  );
+
+  const tx = await buildTx(callerAddress, operation);
+
+  const sim = await rpc.simulateTransaction(tx);
+  if (SorobanRpc.Api.isSimulationError(sim)) {
+    throw new Error(`Simulation failed: ${sim.error}`);
+  }
+
+  const assembled = SorobanRpc.assembleTransaction(tx, sim).build();
+  const signedXdr = await signTx(assembled.toXDR(), NETWORK_PASSPHRASE);
+
+  const sendResult = await rpc.sendTransaction(
+    TransactionBuilder.fromXDR(signedXdr, NETWORK_PASSPHRASE)
+  );
+
+  if (sendResult.status === "ERROR") {
+    throw new Error(`Submit failed: ${JSON.stringify(sendResult.errorResult)}`);
+  }
+
+  const hash = sendResult.hash;
+  for (let i = 0; i < 20; i++) {
+    await new Promise((r) => setTimeout(r, 3000));
+    const status = await rpc.getTransaction(hash);
+    if (status.status === SorobanRpc.Api.GetTransactionStatus.SUCCESS) return hash;
+    if (status.status === SorobanRpc.Api.GetTransactionStatus.FAILED) {
+      throw new Error(`Transaction failed: ${hash}`);
+    }
+  }
+
+  throw new Error(`Transaction not confirmed after timeout: ${hash}`);
+}

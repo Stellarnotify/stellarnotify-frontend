@@ -5,16 +5,18 @@ import type { SubscriptionRow } from "@/lib/api";
 import { ChannelBadge } from "@/components/ui/ChannelBadge";
 import { ExpiryCountdown } from "@/components/subscriptions/ExpiryCountdown";
 import { CopyButton } from "@/components/ui/CopyButton";
+import { RenewButton } from "@/components/subscriptions/RenewButton";
 
 interface Props {
   sub: SubscriptionRow;
   onCancel: (id: string) => void;
   onPause: (id: string) => void;
   onResume: (id: string) => void;
+  onRenew: (id: string, additionalLedgers: number) => Promise<void>;
   onClick: (id: string) => void;
 }
 
-export function SubscriptionCard({ sub, onCancel, onPause, onResume, onClick }: Props) {
+export function SubscriptionCard({ sub, onCancel, onPause, onResume, onRenew, onClick }: Props) {
   const isExpired =
     sub.expires_at_ledger > 0 && sub.expires_at_ledger < Date.now() / 1000;
 
@@ -51,43 +53,48 @@ export function SubscriptionCard({ sub, onCancel, onPause, onResume, onClick }: 
         </div>
 
         {/* Actions */}
-        <div className="flex shrink-0 items-center gap-1 opacity-0 group-hover:opacity-100 transition">
-          {!isExpired && sub.active && (
+        <div className="flex shrink-0 flex-col items-end gap-2">
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+            {!isExpired && sub.active && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onPause(sub.id); }}
+                aria-label="Pause subscription"
+                className="btn-secondary !px-2 !py-2"
+                title="Pause"
+              >
+                <BellOff className="h-3.5 w-3.5" />
+              </button>
+            )}
+            {!isExpired && !sub.active && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onResume(sub.id); }}
+                aria-label="Resume subscription"
+                className="btn-secondary !px-2 !py-2"
+                title="Resume"
+              >
+                <Bell className="h-3.5 w-3.5" />
+              </button>
+            )}
             <button
-              onClick={(e) => { e.stopPropagation(); onPause(sub.id); }}
-              aria-label="Pause subscription"
-              className="btn-secondary !px-2 !py-2"
-              title="Pause"
+              onClick={(e) => { e.stopPropagation(); onCancel(sub.id); }}
+              aria-label="Cancel subscription"
+              className="btn-secondary !px-2 !py-2 hover:!border-red-700 hover:!text-red-400"
+              title="Cancel"
             >
-              <BellOff className="h-3.5 w-3.5" />
+              <Trash2 className="h-3.5 w-3.5" />
             </button>
-          )}
-          {!isExpired && !sub.active && (
             <button
-              onClick={(e) => { e.stopPropagation(); onResume(sub.id); }}
-              aria-label="Resume subscription"
+              onClick={(e) => e.stopPropagation()}
+              aria-label="View details"
               className="btn-secondary !px-2 !py-2"
-              title="Resume"
+              title="Details"
             >
-              <Bell className="h-3.5 w-3.5" />
+              <ExternalLink className="h-3.5 w-3.5" />
             </button>
-          )}
-          <button
-            onClick={(e) => { e.stopPropagation(); onCancel(sub.id); }}
-            aria-label="Cancel subscription"
-            className="btn-secondary !px-2 !py-2 hover:!border-red-700 hover:!text-red-400"
-            title="Cancel"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </button>
-          <button
-            onClick={(e) => e.stopPropagation()}
-            aria-label="View details"
-            className="btn-secondary !px-2 !py-2"
-            title="Details"
-          >
-            <ExternalLink className="h-3.5 w-3.5" />
-          </button>
+          </div>
+          <div onClick={(e) => e.stopPropagation()}>
+            <RenewButton onRenew={(ledgers) => onRenew(sub.id, ledgers)} />
+          </div>
         </div>
       </div>
     </div>

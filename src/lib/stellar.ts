@@ -251,3 +251,28 @@ export async function callResume(params: {
   const assembled = SorobanRpc.assembleTransaction(tx, sim).build();
   return signSubmitAndPoll(assembled.toXDR());
 }
+
+// ── renew_sub() ───────────────────────────────────────────────────────────
+
+export async function callRenew(params: {
+  callerAddress: string;
+  subscriptionId: string;
+  additionalLedgers: number;
+}): Promise<string> {
+  const { callerAddress, subscriptionId, additionalLedgers } = params;
+
+  const operation = contract.call(
+    "renew_sub",
+    new Address(callerAddress).toScVal(),
+    nativeToScVal(subscriptionId, { type: "u64" }),
+    nativeToScVal(additionalLedgers, { type: "u32" })
+  );
+
+  const tx = await buildTx(callerAddress, operation);
+  const sim = await rpc.simulateTransaction(tx);
+  if (SorobanRpc.Api.isSimulationError(sim)) {
+    throw new Error(`Simulation failed: ${sim.error}`);
+  }
+  const assembled = SorobanRpc.assembleTransaction(tx, sim).build();
+  return signSubmitAndPoll(assembled.toXDR());
+}

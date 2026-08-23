@@ -73,6 +73,7 @@ export default function ExplorerPage() {
                   onCancel={() => {}}
                   onPause={() => {}}
                   onResume={() => {}}
+                  onRenew={async () => {}}
                   onClick={() => {}}
                 />
               </li>

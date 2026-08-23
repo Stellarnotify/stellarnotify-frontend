@@ -13,7 +13,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ErrorBanner } from "@/components/ui/ErrorBanner";
 import { TxToast } from "@/components/ui/TxToast";
 import type { TxToastState } from "@/components/ui/TxToast";
-import { callSubscribe, callCancel, callPause, callResume } from "@/lib/stellar";
+import { callSubscribe, callCancel, callPause, callResume, callRenew } from "@/lib/stellar";
 import { Wallet, Bell, Loader2 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -75,6 +75,13 @@ export default function DashboardPage() {
     if (!address) return;
     await withToast("Subscription resumed", () =>
       callResume({ callerAddress: address, subscriptionId: id })
+    );
+  }, [address, withToast]);
+
+  const handleRenew = useCallback(async (id: string, additionalLedgers: number) => {
+    if (!address) return;
+    await withToast("Subscription renewed", () =>
+      callRenew({ callerAddress: address, subscriptionId: id, additionalLedgers })
     );
   }, [address, withToast]);
 
@@ -144,6 +151,7 @@ export default function DashboardPage() {
                   onCancel={handleCancel}
                   onPause={handlePause}
                   onResume={handleResume}
+                  onRenew={handleRenew}
                   onClick={setSelectedId}
                 />
               </li>

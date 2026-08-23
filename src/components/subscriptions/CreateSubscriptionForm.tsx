@@ -4,13 +4,13 @@ import { useState } from "react";
 import { Plus, Loader2, X, Hash } from "lucide-react";
 import { z } from "zod";
 import { sha256Hex } from "@/lib/hash";
+import { TagEditor } from "@/components/ui/TagEditor";
 
 const schema = z.object({
   watchedContract: z.string().min(50, "Enter a valid Stellar contract address"),
   channel: z.enum(["Webhook", "InApp", "OnChain"]),
   endpointRef: z.string().min(8, "Endpoint reference is required"),
   ttlLedgers: z.coerce.number().min(0).max(1_000_000),
-  topics: z.string(),
 });
 
 interface Props {
@@ -29,12 +29,12 @@ export function CreateSubscriptionForm({ onSubmit }: Props) {
   const [hashing, setHashing] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [webhookUrl, setWebhookUrl] = useState("");
+  const [topics, setTopics] = useState<string[]>([]);
   const [form, setForm] = useState({
     watchedContract: "",
     channel: "Webhook" as const,
     endpointRef: "",
     ttlLedgers: 0,
-    topics: "",
   });
 
   const handleChange = (
@@ -69,15 +69,10 @@ export function CreateSubscriptionForm({ onSubmit }: Props) {
     }
     setLoading(true);
     try {
-      await onSubmit({
-        ...result.data,
-        topics: result.data.topics
-          .split(",")
-          .map((t) => t.trim())
-          .filter(Boolean),
-      });
+      await onSubmit({ ...result.data, topics });
       setOpen(false);
-      setForm({ watchedContract: "", channel: "Webhook", endpointRef: "", ttlLedgers: 0, topics: "" });
+      setForm({ watchedContract: "", channel: "Webhook", endpointRef: "", ttlLedgers: 0 });
+      setTopics([]);
       setWebhookUrl("");
     } finally {
       setLoading(false);
@@ -96,7 +91,11 @@ export function CreateSubscriptionForm({ onSubmit }: Props) {
     <div className="card space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold">Create Subscription</h3>
-        <button onClick={() => setOpen(false)} aria-label="Close form" className="text-gray-500 hover:text-gray-300">
+        <button
+          onClick={() => setOpen(false)}
+          aria-label="Close form"
+          className="text-gray-500 hover:text-gray-300"
+        >
           <X className="h-4 w-4" />
         </button>
       </div>
@@ -181,19 +180,19 @@ export function CreateSubscriptionForm({ onSubmit }: Props) {
           )}
         </div>
 
-        {/* Topics */}
+        {/* Topics — tag editor */}
         <div>
-          <label htmlFor="topics" className="label">
+          <p className="label">
             Topic Filters
-            <span className="ml-2 text-xs text-gray-500">(comma-separated, leave blank for all events)</span>
-          </label>
-          <input
-            id="topics"
-            name="topics"
-            value={form.topics}
-            onChange={handleChange}
-            placeholder="sub_new, sub_cancel"
-            className="input"
+            <span className="ml-2 text-xs text-gray-500">
+              (press Enter or comma to add · max 10)
+            </span>
+          </p>
+          <TagEditor
+            tags={topics}
+            onChange={setTopics}
+            placeholder="e.g. sub_new"
+            maxTags={10}
           />
         </div>
 

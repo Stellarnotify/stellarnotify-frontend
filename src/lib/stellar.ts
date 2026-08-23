@@ -276,3 +276,28 @@ export async function callRenew(params: {
   const assembled = SorobanRpc.assembleTransaction(tx, sim).build();
   return signSubmitAndPoll(assembled.toXDR());
 }
+
+// ── update_endpoint_ref() ─────────────────────────────────────────────────
+
+export async function callUpdateEndpointRef(params: {
+  callerAddress: string;
+  subscriptionId: string;
+  newEndpointRef: string;
+}): Promise<string> {
+  const { callerAddress, subscriptionId, newEndpointRef } = params;
+
+  const operation = contract.call(
+    "update_endpoint_ref",
+    new Address(callerAddress).toScVal(),
+    nativeToScVal(subscriptionId, { type: "u64" }),
+    nativeToScVal(newEndpointRef, { type: "bytes" })
+  );
+
+  const tx = await buildTx(callerAddress, operation);
+  const sim = await rpc.simulateTransaction(tx);
+  if (SorobanRpc.Api.isSimulationError(sim)) {
+    throw new Error(`Simulation failed: ${sim.error}`);
+  }
+  const assembled = SorobanRpc.assembleTransaction(tx, sim).build();
+  return signSubmitAndPoll(assembled.toXDR());
+}

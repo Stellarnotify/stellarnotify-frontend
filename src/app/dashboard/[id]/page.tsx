@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { use, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchSubscription, fetchNotificationsBySubscription } from "@/lib/api";
 import { NotificationFeed } from "@/components/notifications/NotificationFeed";
@@ -9,6 +9,10 @@ import { ChannelBadge } from "@/components/ui/ChannelBadge";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ErrorBanner } from "@/components/ui/ErrorBanner";
 import { ExpiryCountdown } from "@/components/subscriptions/ExpiryCountdown";
+import { UpdateEndpointRefForm } from "@/components/subscriptions/UpdateEndpointRefForm";
+import { TxToast } from "@/components/ui/TxToast";
+import type { TxToastState } from "@/components/ui/TxToast";
+import { callUpdateEndpointRef } from "@/lib/stellar";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { CopyButton } from "@/components/ui/CopyButton";
 import Link from "next/link";
@@ -46,6 +50,27 @@ export default function SubscriptionDetailPage({
     staleTime: 10_000,
     refetchInterval: 10_000,
   });
+
+  const [toast, setToast] = useState<TxToastState | null>(null);
+
+  const handleUpdateRef = async (newRef: string) => {
+    if (!sub) return;
+    setToast({ status: "pending", message: "Updating endpoint ref…" });
+    try {
+      // walletAddress not available here — caller must be the owner
+      const hash = await callUpdateEndpointRef({
+        callerAddress: sub.owner,
+        subscriptionId: id,
+        newEndpointRef: newRef,
+      });
+      setToast({ status: "confirmed", message: "Endpoint ref updated", hash });
+    } catch (err: unknown) {
+      setToast({
+        status: "failed",
+        message: err instanceof Error ? err.message : "Update failed",
+      });
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
@@ -118,6 +143,15 @@ export default function SubscriptionDetailPage({
                 value={<span className="font-mono text-xs">{sub.endpoint_ref}</span>}
               />
               <DetailRow
+                label="Update Endpoint"
+                value={
+                  <UpdateEndpointRefForm
+                    currentRef={sub.endpoint_ref}
+                    onUpdate={handleUpdateRef}
+                  />
+                }
+              />
+              <DetailRow
                 label="Topic Filters"
                 value={
                   sub.topics.length > 0 ? (
@@ -181,6 +215,7 @@ export default function SubscriptionDetailPage({
           </section>
         </>
       )}
+      <TxToast toast={toast} onDismiss={() => setToast(null)} />
     </div>
   );
 }

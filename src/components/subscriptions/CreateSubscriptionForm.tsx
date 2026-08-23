@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Loader2, X } from "lucide-react";
+import { Plus, Loader2, X, Hash } from "lucide-react";
 import { z } from "zod";
+import { sha256Hex } from "@/lib/hash";
 
 const schema = z.object({
   watchedContract: z.string().min(50, "Enter a valid Stellar contract address"),
@@ -25,7 +26,9 @@ interface Props {
 export function CreateSubscriptionForm({ onSubmit }: Props) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [hashing, setHashing] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [webhookUrl, setWebhookUrl] = useState("");
   const [form, setForm] = useState({
     watchedContract: "",
     channel: "Webhook" as const,
@@ -39,6 +42,18 @@ export function CreateSubscriptionForm({ onSubmit }: Props) {
   ) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     setErrors((prev) => ({ ...prev, [e.target.name]: "" }));
+  };
+
+  const handleHashUrl = async () => {
+    if (!webhookUrl.trim()) return;
+    setHashing(true);
+    try {
+      const hex = await sha256Hex(webhookUrl.trim());
+      setForm((prev) => ({ ...prev, endpointRef: hex }));
+      setErrors((prev) => ({ ...prev, endpointRef: "" }));
+    } finally {
+      setHashing(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,6 +78,7 @@ export function CreateSubscriptionForm({ onSubmit }: Props) {
       });
       setOpen(false);
       setForm({ watchedContract: "", channel: "Webhook", endpointRef: "", ttlLedgers: 0, topics: "" });
+      setWebhookUrl("");
     } finally {
       setLoading(false);
     }
@@ -125,6 +141,32 @@ export function CreateSubscriptionForm({ onSubmit }: Props) {
             Endpoint Reference *
             <span className="ml-2 text-xs text-gray-500">(SHA-256 of your webhook URL)</span>
           </label>
+
+          {/* URL → hash helper */}
+          <div className="flex gap-2 mb-2">
+            <input
+              value={webhookUrl}
+              onChange={(e) => setWebhookUrl(e.target.value)}
+              placeholder="https://your-server.com/webhook"
+              className="input flex-1 text-xs"
+              aria-label="Webhook URL to hash"
+            />
+            <button
+              type="button"
+              onClick={handleHashUrl}
+              disabled={hashing || !webhookUrl.trim()}
+              className="btn-secondary shrink-0 !px-3"
+              title="Compute SHA-256 hash"
+              aria-label="Compute SHA-256 hash of webhook URL"
+            >
+              {hashing ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Hash className="h-4 w-4" />
+              )}
+            </button>
+          </div>
+
           <input
             id="endpointRef"
             name="endpointRef"

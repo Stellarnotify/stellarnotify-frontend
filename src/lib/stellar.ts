@@ -9,6 +9,7 @@ import {
   xdr,
   scValToNative,
 } from "@stellar/stellar-sdk";
+import { signTx } from "@/lib/wallet";
 
 const RPC_URL =
   process.env.NEXT_PUBLIC_STELLAR_RPC_URL ?? "https://soroban-testnet.stellar.org";
@@ -65,4 +66,69 @@ export function channelToScVal(channel: "Webhook" | "InApp" | "OnChain") {
   return xdr.ScVal.scvVec([
     xdr.ScVal.scvSymbol(channel),
   ]);
+}
+
+/**
+ * Build, simulate, sign (Freighter), and submit a subscribe() call.
+ * Returns the transaction hash on success.
+ */
+export async function callSubscribe(params: {
+  callerAddress: string;
+  watchedContract: string;
+  channel: "Webhook" | "InApp" | "OnChain";
+  endpointRef: string;
+  ttlLedgers: number;
+  topics: string[];
+}): Promise<string> {
+  const { callerAddress, watchedContract, channel, endpointRef, ttlLedgers, topics } = params;
+
+  // Build the contract call operation
+  const operation = contract.call(
+    "subscribe",
+    new Address(callerAddress).toScVal(),
+    new Address(watchedContract).toScVal(),
+    channelToScVal(channel),
+    nativeToScVal(endpointRef, { type: "bytes" }),
+    nativeToScVal(ttlLedgers, { type: "u32" }),
+    nativeToScVal(topics.map((t) => nativeToScVal(t, { type: "symbol" })))
+  );
+
+  // Build unsigned tx
+  const tx = await buildTx(callerAddress, operation);
+
+  // Simulate to get the footprint / resource fees
+  const sim = await rpc.simulateTransaction(tx);
+  if (SorobanRpc.Api.isSimulationError(sim)) {
+    throw new Error(`Simulation failed: ${sim.error}`);
+  }
+
+  // Assemble (inject auth + resource fees)
+  const assembled = SorobanRpc.assembleTransaction(tx, sim).build();
+
+  // Sign with Freighter
+  const signedXdr = await signTx(assembled.toXDR(), NETWORK_PASSPHRASE);
+
+  // Submit
+  const sendResult = await rpc.sendTransaction(
+    TransactionBuilder.fromXDR(signedXdr, NETWORK_PASSPHRASE)
+  );
+
+  if (sendResult.status === "ERROR") {
+    throw new Error(`Submit failed: ${JSON.stringify(sendResult.errorResult)}`);
+  }
+
+  // Poll until confirmed
+  const hash = sendResult.hash;
+  for (let i = 0; i < 20; i++) {
+    await new Promise((r) => setTimeout(r, 3000));
+    const status = await rpc.getTransaction(hash);
+    if (status.status === SorobanRpc.Api.GetTransactionStatus.SUCCESS) {
+      return hash;
+    }
+    if (status.status === SorobanRpc.Api.GetTransactionStatus.FAILED) {
+      throw new Error(`Transaction failed: ${hash}`);
+    }
+  }
+
+  throw new Error(`Transaction not confirmed after timeout: ${hash}`);
 }

@@ -9,6 +9,8 @@ import { NotificationFeed } from "@/components/notifications/NotificationFeed";
 import { useNotifications } from "@/hooks/useSubscriptions";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { ErrorBanner } from "@/components/ui/ErrorBanner";
+import { callSubscribe } from "@/lib/stellar";
 import { Wallet, Bell, Loader2 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -16,6 +18,7 @@ export default function DashboardPage() {
   const { data: subs, isLoading, refetch } = useSubscriptions(address);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const { data: notifications } = useNotifications(selectedId);
+  const [txError, setTxError] = useState<string | null>(null);
 
   const handleCreate = useCallback(
     async (values: {
@@ -25,14 +28,16 @@ export default function DashboardPage() {
       ttlLedgers: number;
       topics: string[];
     }) => {
-      // In production this calls the Soroban contract via Freighter.
-      // Stub: show alert and refetch.
-      alert(
-        `TODO: call StellarNotify contract subscribe() with:\n${JSON.stringify(values, null, 2)}`
-      );
-      await refetch();
+      if (!address) return;
+      setTxError(null);
+      try {
+        await callSubscribe({ callerAddress: address, ...values });
+        await refetch();
+      } catch (err: unknown) {
+        setTxError(err instanceof Error ? err.message : "Transaction failed");
+      }
     },
-    [refetch]
+    [address, refetch]
   );
 
   const handleCancel = useCallback((id: string) => {
@@ -80,6 +85,11 @@ export default function DashboardPage() {
         </div>
         <CreateSubscriptionForm onSubmit={handleCreate} />
       </div>
+
+      {/* TX error */}
+      {txError && (
+        <ErrorBanner message={txError} onDismiss={() => setTxError(null)} />
+      )}
 
       {/* Main grid */}
       <div className="grid lg:grid-cols-2 gap-6">

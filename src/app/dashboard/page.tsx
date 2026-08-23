@@ -10,6 +10,8 @@ import { useNotifications } from "@/hooks/useSubscriptions";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ErrorBanner } from "@/components/ui/ErrorBanner";
+import { TxToast } from "@/components/ui/TxToast";
+import type { TxToastState } from "@/components/ui/TxToast";
 import { callSubscribe, callCancel, callPause, callResume } from "@/lib/stellar";
 import { Wallet, Bell, Loader2 } from "lucide-react";
 
@@ -18,7 +20,25 @@ export default function DashboardPage() {
   const { data: subs, isLoading, refetch } = useSubscriptions(address);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const { data: notifications } = useNotifications(selectedId);
-  const [txError, setTxError] = useState<string | null>(null);
+  const [toast, setToast] = useState<TxToastState | null>(null);
+
+  /** Generic wrapper: shows pending → confirmed/failed toast around any on-chain call */
+  const withToast = useCallback(
+    async (label: string, fn: () => Promise<string>) => {
+      setToast({ status: "pending", message: `${label}…` });
+      try {
+        const hash = await fn();
+        setToast({ status: "confirmed", message: `${label} confirmed`, hash });
+        await refetch();
+      } catch (err: unknown) {
+        setToast({
+          status: "failed",
+          message: err instanceof Error ? err.message : `${label} failed`,
+        });
+      }
+    },
+    [refetch]
+  );
 
   const handleCreate = useCallback(
     async (values: {
@@ -29,49 +49,33 @@ export default function DashboardPage() {
       topics: string[];
     }) => {
       if (!address) return;
-      setTxError(null);
-      try {
-        await callSubscribe({ callerAddress: address, ...values });
-        await refetch();
-      } catch (err: unknown) {
-        setTxError(err instanceof Error ? err.message : "Transaction failed");
-      }
+      await withToast("Subscription created", () =>
+        callSubscribe({ callerAddress: address, ...values })
+      );
     },
-    [address, refetch]
+    [address, withToast]
   );
 
   const handleCancel = useCallback(async (id: string) => {
     if (!address) return;
-    setTxError(null);
-    try {
-      await callCancel({ callerAddress: address, subscriptionId: id });
-      await refetch();
-    } catch (err: unknown) {
-      setTxError(err instanceof Error ? err.message : "Cancel failed");
-    }
-  }, [address, refetch]);
+    await withToast("Subscription cancelled", () =>
+      callCancel({ callerAddress: address, subscriptionId: id })
+    );
+  }, [address, withToast]);
 
   const handlePause = useCallback(async (id: string) => {
     if (!address) return;
-    setTxError(null);
-    try {
-      await callPause({ callerAddress: address, subscriptionId: id });
-      await refetch();
-    } catch (err: unknown) {
-      setTxError(err instanceof Error ? err.message : "Pause failed");
-    }
-  }, [address, refetch]);
+    await withToast("Subscription paused", () =>
+      callPause({ callerAddress: address, subscriptionId: id })
+    );
+  }, [address, withToast]);
 
   const handleResume = useCallback(async (id: string) => {
     if (!address) return;
-    setTxError(null);
-    try {
-      await callResume({ callerAddress: address, subscriptionId: id });
-      await refetch();
-    } catch (err: unknown) {
-      setTxError(err instanceof Error ? err.message : "Resume failed");
-    }
-  }, [address, refetch]);
+    await withToast("Subscription resumed", () =>
+      callResume({ callerAddress: address, subscriptionId: id })
+    );
+  }, [address, withToast]);
 
   if (!address) {
     return (
@@ -108,9 +112,6 @@ export default function DashboardPage() {
       </div>
 
       {/* TX error */}
-      {txError && (
-        <ErrorBanner message={txError} onDismiss={() => setTxError(null)} />
-      )}
 
       {/* Main grid */}
       <div className="grid lg:grid-cols-2 gap-6">
@@ -162,6 +163,7 @@ export default function DashboardPage() {
           )}
         </section>
       </div>
+      <TxToast toast={toast} onDismiss={() => setToast(null)} />
     </div>
   );
 }

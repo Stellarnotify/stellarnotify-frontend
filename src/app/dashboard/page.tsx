@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useWallet } from "@/hooks/useWallet";
 import { useSubscriptions } from "@/hooks/useSubscriptions";
 import { SubscriptionCard } from "@/components/subscriptions/SubscriptionCard";
 import { SubscriptionSkeleton } from "@/components/subscriptions/SubscriptionSkeleton";
+import { SubscriptionSearch } from "@/components/subscriptions/SubscriptionSearch";
 import { CreateSubscriptionForm } from "@/components/subscriptions/CreateSubscriptionForm";
 import { RegisterEndpointForm } from "@/components/subscriptions/RegisterEndpointForm";
 import { NotificationFeed } from "@/components/notifications/NotificationFeed";
@@ -20,8 +21,21 @@ export default function DashboardPage() {
   const { address, connect, connecting } = useWallet();
   const { data: subs, isLoading, refetch } = useSubscriptions(address);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const { data: notifications } = useNotifications(selectedId);
   const [toast, setToast] = useState<TxToastState | null>(null);
+
+  // Filter subscriptions based on search query
+  const filteredSubs = useMemo(() => {
+    if (!subs || !searchQuery.trim()) return subs;
+    
+    const query = searchQuery.toLowerCase();
+    return subs.filter((sub) => {
+      const contractMatch = sub.watched_contract.toLowerCase().includes(query);
+      const channelMatch = sub.channel.toLowerCase().includes(query);
+      return contractMatch || channelMatch;
+    });
+  }, [subs, searchQuery]);
 
   /** Generic wrapper: shows pending → confirmed/failed toast around any on-chain call */
   const withToast = useCallback(
@@ -130,8 +144,12 @@ export default function DashboardPage() {
         <section className="space-y-4">
           <h2 className="font-semibold text-gray-300 dark:text-gray-300 light:text-gray-700">
             Your Subscriptions
-            {subs && <span className="ml-2 text-xs text-gray-500">({subs.length})</span>}
+            {subs && <span className="ml-2 text-xs text-gray-500">({filteredSubs?.length || 0} / {subs.length})</span>}
           </h2>
+
+          {!isLoading && subs && subs.length > 0 && (
+            <SubscriptionSearch value={searchQuery} onChange={setSearchQuery} />
+          )}
 
           {isLoading && (
             <ul className="space-y-3">
@@ -151,9 +169,17 @@ export default function DashboardPage() {
             />
           )}
 
-          {!isLoading && subs && subs.length > 0 && (
+          {!isLoading && subs && subs.length > 0 && filteredSubs && filteredSubs.length === 0 && (
+            <EmptyState
+              icon={Bell}
+              title="No matches found"
+              description="Try adjusting your search query."
+            />
+          )}
+
+          {!isLoading && filteredSubs && filteredSubs.length > 0 && (
             <ul className="space-y-3">
-              {subs.map((sub) => (
+              {filteredSubs.map((sub) => (
                 <li key={sub.id}>
                   <SubscriptionCard
                     sub={sub}

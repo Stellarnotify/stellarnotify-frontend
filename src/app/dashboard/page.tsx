@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { useWallet } from "@/hooks/useWallet";
 import { useSubscriptions } from "@/hooks/useSubscriptions";
 import { SubscriptionCard } from "@/components/subscriptions/SubscriptionCard";
+import { SubscriptionSkeleton } from "@/components/subscriptions/SubscriptionSkeleton";
 import { CreateSubscriptionForm } from "@/components/subscriptions/CreateSubscriptionForm";
 import { RegisterEndpointForm } from "@/components/subscriptions/RegisterEndpointForm";
 import { NotificationFeed } from "@/components/notifications/NotificationFeed";
@@ -127,12 +128,20 @@ export default function DashboardPage() {
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Subscriptions list */}
         <section className="space-y-4">
-          <h2 className="font-semibold text-gray-300">
+          <h2 className="font-semibold text-gray-300 dark:text-gray-300 light:text-gray-700">
             Your Subscriptions
             {subs && <span className="ml-2 text-xs text-gray-500">({subs.length})</span>}
           </h2>
 
-          {isLoading && <LoadingSpinner label="Loading subscriptions…" className="justify-start" />}
+          {isLoading && (
+            <ul className="space-y-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <li key={i}>
+                  <SubscriptionSkeleton />
+                </li>
+              ))}
+            </ul>
+          )}
 
           {!isLoading && (!subs || subs.length === 0) && (
             <EmptyState
@@ -142,20 +151,22 @@ export default function DashboardPage() {
             />
           )}
 
-          <ul className="space-y-3">
-            {subs?.map((sub) => (
-              <li key={sub.id}>
-                <SubscriptionCard
-                  sub={sub}
-                  onCancel={handleCancel}
-                  onPause={handlePause}
-                  onResume={handleResume}
-                  onRenew={handleRenew}
-                  onClick={setSelectedId}
-                />
-              </li>
-            ))}
-          </ul>
+          {!isLoading && subs && subs.length > 0 && (
+            <ul className="space-y-3">
+              {subs.map((sub) => (
+                <li key={sub.id}>
+                  <SubscriptionCard
+                    sub={sub}
+                    onCancel={handleCancel}
+                    onPause={handlePause}
+                    onResume={handleResume}
+                    onRenew={handleRenew}
+                    onClick={setSelectedId}
+                  />
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
 
         {/* Notification feed */}

@@ -13,11 +13,37 @@
     background-color: theme("colors.brand.DEFAULT");
     color: white;
   }
+  
+  /* Light mode colors */
+  .light {
+    --bg-primary: 255 255 255;
+    --bg-secondary: 249 250 251;
+    --bg-card: 255 255 255;
+    --border-primary: 229 231 235;
+    --border-secondary: 209 213 219;
+    --text-primary: 17 24 39;
+    --text-secondary: 75 85 99;
+    --text-tertiary: 156 163 175;
+  }
+  
+  /* Dark mode colors */
+  .dark {
+    --bg-primary: 3 7 18;
+    --bg-secondary: 17 24 39;
+    --bg-card: 31 41 55;
+    --border-primary: 55 65 81;
+    --border-secondary: 75 85 99;
+    --text-primary: 243 244 246;
+    --text-secondary: 209 213 219;
+    --text-tertiary: 156 163 175;
+  }
 }
 
 @layer components {
   .card {
-    @apply rounded-xl border border-gray-800 bg-gray-900 p-6 shadow-lg;
+    @apply rounded-xl border bg-gray-900 p-6 shadow-lg;
+    background-color: rgb(var(--bg-card));
+    border-color: rgb(var(--border-primary));
   }
   .btn-primary {
     @apply inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold
@@ -25,17 +51,29 @@
            focus-visible:outline-offset-2 focus-visible:outline-brand disabled:opacity-50;
   }
   .btn-secondary {
-    @apply inline-flex items-center gap-2 rounded-lg border border-gray-700 bg-gray-800
-           px-4 py-2 text-sm font-semibold text-gray-200 transition hover:bg-gray-700
-           focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2
+    @apply inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold 
+           transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2
            focus-visible:outline-brand disabled:opacity-50;
+    background-color: rgb(var(--bg-secondary));
+    border-color: rgb(var(--border-primary));
+    color: rgb(var(--text-primary));
+  }
+  .btn-secondary:hover {
+    background-color: rgb(var(--bg-card));
   }
   .input {
-    @apply w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-gray-100
-           placeholder-gray-500 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand;
+    @apply w-full rounded-lg border px-3 py-2 text-sm
+           focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand;
+    background-color: rgb(var(--bg-secondary));
+    border-color: rgb(var(--border-primary));
+    color: rgb(var(--text-primary));
+  }
+  .input::placeholder {
+    color: rgb(var(--text-tertiary));
   }
   .label {
-    @apply block text-sm font-medium text-gray-300 mb-1;
+    @apply block text-sm font-medium mb-1;
+    color: rgb(var(--text-secondary));
   }
   .badge-active {
     @apply inline-flex items-center rounded-full bg-emerald-900/40 px-2 py-0.5 text-xs

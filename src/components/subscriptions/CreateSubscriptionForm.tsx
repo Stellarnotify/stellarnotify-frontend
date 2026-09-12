@@ -6,11 +6,23 @@ import { z } from "zod";
 import { sha256Hex } from "@/lib/hash";
 import { TagEditor } from "@/components/ui/TagEditor";
 
+// Stellar contract address validation
+const stellarContractRegex = /^C[A-Z0-9]{55}$/;
+
 const schema = z.object({
-  watchedContract: z.string().min(50, "Enter a valid Stellar contract address"),
+  watchedContract: z
+    .string()
+    .min(1, "Contract address is required")
+    .regex(stellarContractRegex, "Must be a valid Stellar contract address (starts with 'C' and is 56 characters)"),
   channel: z.enum(["Webhook", "InApp", "OnChain"]),
-  endpointRef: z.string().min(8, "Endpoint reference is required"),
-  ttlLedgers: z.coerce.number().min(0).max(1_000_000),
+  endpointRef: z
+    .string()
+    .min(1, "Endpoint reference is required")
+    .regex(/^[a-f0-9]{64}$/i, "Must be a valid 64-character hexadecimal hash"),
+  ttlLedgers: z.coerce
+    .number({ invalid_type_error: "TTL must be a number" })
+    .min(0, "TTL must be 0 or greater")
+    .max(1_000_000, "TTL must not exceed 1,000,000 ledgers"),
 });
 
 interface Props {
@@ -29,6 +41,7 @@ export function CreateSubscriptionForm({ onSubmit }: Props) {
   const [hashing, setHashing] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [webhookUrl, setWebhookUrl] = useState("");
+  const [webhookUrlError, setWebhookUrlError] = useState("");
   const [topics, setTopics] = useState<string[]>([]);
   const [form, setForm] = useState({
     watchedContract: "",
@@ -109,12 +122,13 @@ export function CreateSubscriptionForm({ onSubmit }: Props) {
             name="watchedContract"
             value={form.watchedContract}
             onChange={handleChange}
-            placeholder="CXXXX..."
-            className="input"
+            placeholder="CXXXX... (56 characters)"
+            className={`input ${errors.watchedContract ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
             aria-describedby={errors.watchedContract ? "wc-err" : undefined}
+            aria-invalid={!!errors.watchedContract}
           />
           {errors.watchedContract && (
-            <p id="wc-err" className="mt-1 text-xs text-red-400">{errors.watchedContract}</p>
+            <p id="wc-err" className="mt-1 text-xs text-red-400" role="alert">{errors.watchedContract}</p>
           )}
         </div>
 
@@ -175,11 +189,12 @@ export function CreateSubscriptionForm({ onSubmit }: Props) {
             value={form.endpointRef}
             onChange={handleChange}
             placeholder="64-char hex hash"
-            className="input font-mono text-xs break-all"
+            className={`input font-mono text-xs break-all ${errors.endpointRef ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
             aria-describedby={errors.endpointRef ? "ep-err" : undefined}
+            aria-invalid={!!errors.endpointRef}
           />
           {errors.endpointRef && (
-            <p id="ep-err" className="mt-1 text-xs text-red-400">{errors.endpointRef}</p>
+            <p id="ep-err" className="mt-1 text-xs text-red-400" role="alert">{errors.endpointRef}</p>
           )}
         </div>
 
@@ -212,10 +227,16 @@ export function CreateSubscriptionForm({ onSubmit }: Props) {
             name="ttlLedgers"
             type="number"
             min={0}
+            max={1000000}
             value={form.ttlLedgers}
             onChange={handleChange}
-            className="input"
+            className={`input ${errors.ttlLedgers ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+            aria-describedby={errors.ttlLedgers ? "ttl-err" : undefined}
+            aria-invalid={!!errors.ttlLedgers}
           />
+          {errors.ttlLedgers && (
+            <p id="ttl-err" className="mt-1 text-xs text-red-400" role="alert">{errors.ttlLedgers}</p>
+          )}
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2">

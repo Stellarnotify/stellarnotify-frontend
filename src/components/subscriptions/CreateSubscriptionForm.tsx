@@ -81,26 +81,26 @@ export function CreateSubscriptionForm({ onSubmit }: Props) {
 
   if (!open) {
     return (
-      <button onClick={() => setOpen(true)} className="btn-primary">
+      <button onClick={() => setOpen(true)} className="btn-primary w-full sm:w-auto">
         <Plus className="h-4 w-4" /> New Subscription
       </button>
     );
   }
 
   return (
-    <div className="card space-y-4">
+    <div className="card space-y-3 sm:space-y-4 p-4 sm:p-6">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold">Create Subscription</h3>
+        <h3 className="font-semibold text-base sm:text-lg">Create Subscription</h3>
         <button
           onClick={() => setOpen(false)}
           aria-label="Close form"
-          className="text-gray-500 hover:text-gray-300"
+          className="text-gray-500 hover:text-gray-300 p-1"
         >
-          <X className="h-4 w-4" />
+          <X className="h-5 w-5 sm:h-4 sm:w-4" />
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+      <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4" noValidate>
         {/* Contract */}
         <div>
           <label htmlFor="watchedContract" className="label">Contract Address *</label>
@@ -138,11 +138,13 @@ export function CreateSubscriptionForm({ onSubmit }: Props) {
         <div>
           <label htmlFor="endpointRef" className="label">
             Endpoint Reference *
-            <span className="ml-2 text-xs text-gray-500">(SHA-256 of your webhook URL)</span>
+            <span className="ml-1 sm:ml-2 text-xs text-gray-500 block sm:inline mt-0.5 sm:mt-0">
+              (SHA-256 of your webhook URL)
+            </span>
           </label>
 
           {/* URL → hash helper */}
-          <div className="flex gap-2 mb-2">
+          <div className="flex flex-col sm:flex-row gap-2 mb-2">
             <input
               value={webhookUrl}
               onChange={(e) => setWebhookUrl(e.target.value)}
@@ -154,7 +156,7 @@ export function CreateSubscriptionForm({ onSubmit }: Props) {
               type="button"
               onClick={handleHashUrl}
               disabled={hashing || !webhookUrl.trim()}
-              className="btn-secondary shrink-0 !px-3"
+              className="btn-secondary shrink-0 !px-3 w-full sm:w-auto"
               title="Compute SHA-256 hash"
               aria-label="Compute SHA-256 hash of webhook URL"
             >
@@ -163,6 +165,7 @@ export function CreateSubscriptionForm({ onSubmit }: Props) {
               ) : (
                 <Hash className="h-4 w-4" />
               )}
+              <span className="sm:hidden ml-2">Compute Hash</span>
             </button>
           </div>
 
@@ -172,7 +175,7 @@ export function CreateSubscriptionForm({ onSubmit }: Props) {
             value={form.endpointRef}
             onChange={handleChange}
             placeholder="64-char hex hash"
-            className="input font-mono text-xs"
+            className="input font-mono text-xs break-all"
             aria-describedby={errors.endpointRef ? "ep-err" : undefined}
           />
           {errors.endpointRef && (
@@ -184,7 +187,7 @@ export function CreateSubscriptionForm({ onSubmit }: Props) {
         <div>
           <p className="label">
             Topic Filters
-            <span className="ml-2 text-xs text-gray-500">
+            <span className="ml-1 sm:ml-2 text-xs text-gray-500 block sm:inline mt-0.5 sm:mt-0">
               (press Enter or comma to add · max 10)
             </span>
           </p>
@@ -200,7 +203,9 @@ export function CreateSubscriptionForm({ onSubmit }: Props) {
         <div>
           <label htmlFor="ttlLedgers" className="label">
             TTL Ledgers
-            <span className="ml-2 text-xs text-gray-500">(0 = no expiry)</span>
+            <span className="ml-1 sm:ml-2 text-xs text-gray-500 block sm:inline mt-0.5 sm:mt-0">
+              (0 = no expiry)
+            </span>
           </label>
           <input
             id="ttlLedgers"
@@ -213,12 +218,12 @@ export function CreateSubscriptionForm({ onSubmit }: Props) {
           />
         </div>
 
-        <div className="flex gap-3 pt-2">
-          <button type="submit" disabled={loading} className="btn-primary flex-1">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2">
+          <button type="submit" disabled={loading} className="btn-primary flex-1 justify-center">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
             {loading ? "Creating…" : "Create Subscription"}
           </button>
-          <button type="button" onClick={() => setOpen(false)} className="btn-secondary">
+          <button type="button" onClick={() => setOpen(false)} className="btn-secondary sm:w-auto w-full justify-center">
             Cancel
           </button>
         </div>

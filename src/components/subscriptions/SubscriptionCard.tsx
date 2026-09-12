@@ -36,14 +36,21 @@ export function SubscriptionCard({ sub, onCancel, onPause, onResume, onRenew, on
       aria-label={`Subscription ${sub.id}`}
     >
       <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0 space-y-1">
-          <div className="flex items-center gap-2">
+        <div className="min-w-0 space-y-1 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
             {statusBadge}
-            <span className="text-xs text-gray-500 font-mono">#{sub.id}</span>
-            <CopyButton text={sub.id} label="Copy subscription ID" />
+            <div className="flex items-center gap-1 font-mono text-xs text-gray-500">
+              <span>#{sub.id}</span>
+              <CopyButton text={sub.id} label="Copy subscription ID" />
+            </div>
           </div>
-          <p className="text-sm text-gray-300 font-mono truncate">
-            Watching: {sub.watched_contract}
+          <p className="text-sm text-gray-300 font-mono truncate flex items-center gap-2">
+            <span className="truncate">Watching: {sub.watched_contract}</span>
+            <CopyButton 
+              text={sub.watched_contract} 
+              label="Copy contract address"
+              className="shrink-0"
+            />
           </p>
           <p className="text-xs text-gray-500">
             <ChannelBadge channel={sub.channel} />

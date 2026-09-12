@@ -58,12 +58,27 @@ export function CreateSubscriptionForm({ onSubmit }: Props) {
   };
 
   const handleHashUrl = async () => {
-    if (!webhookUrl.trim()) return;
+    if (!webhookUrl.trim()) {
+      setErrors((prev) => ({ ...prev, webhookUrl: "Please enter a webhook URL" }));
+      return;
+    }
+    
+    // Basic URL validation
+    try {
+      new URL(webhookUrl.trim());
+    } catch {
+      setErrors((prev) => ({ ...prev, webhookUrl: "Please enter a valid URL (e.g., https://example.com/webhook)" }));
+      return;
+    }
+    
     setHashing(true);
+    setErrors((prev) => ({ ...prev, webhookUrl: "" }));
     try {
       const hex = await sha256Hex(webhookUrl.trim());
       setForm((prev) => ({ ...prev, endpointRef: hex }));
       setErrors((prev) => ({ ...prev, endpointRef: "" }));
+    } catch (error) {
+      setErrors((prev) => ({ ...prev, webhookUrl: "Failed to generate hash. Please try again." }));
     } finally {
       setHashing(false);
     }
@@ -78,6 +93,12 @@ export function CreateSubscriptionForm({ onSubmit }: Props) {
         if (err.path[0]) fieldErrors[err.path[0] as string] = err.message;
       });
       setErrors(fieldErrors);
+      
+      // Focus first error field
+      const firstErrorField = Object.keys(fieldErrors)[0];
+      const element = document.getElementById(firstErrorField);
+      element?.focus();
+      
       return;
     }
     setLoading(true);
@@ -87,6 +108,9 @@ export function CreateSubscriptionForm({ onSubmit }: Props) {
       setForm({ watchedContract: "", channel: "Webhook", endpointRef: "", ttlLedgers: 0 });
       setTopics([]);
       setWebhookUrl("");
+      setErrors({});
+    } catch (error) {
+      setErrors({ submit: error instanceof Error ? error.message : "Failed to create subscription. Please try again." });
     } finally {
       setLoading(false);
     }
@@ -159,13 +183,23 @@ export function CreateSubscriptionForm({ onSubmit }: Props) {
 
           {/* URL → hash helper */}
           <div className="flex flex-col sm:flex-row gap-2 mb-2">
-            <input
-              value={webhookUrl}
-              onChange={(e) => setWebhookUrl(e.target.value)}
-              placeholder="https://your-server.com/webhook"
-              className="input flex-1 text-xs"
-              aria-label="Webhook URL to hash"
-            />
+            <div className="flex-1">
+              <input
+                value={webhookUrl}
+                onChange={(e) => {
+                  setWebhookUrl(e.target.value);
+                  setErrors((prev) => ({ ...prev, webhookUrl: "" }));
+                }}
+                placeholder="https://your-server.com/webhook"
+                className={`input flex-1 text-xs ${errors.webhookUrl ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+                aria-label="Webhook URL to hash"
+                aria-describedby={errors.webhookUrl ? "url-err" : undefined}
+                aria-invalid={!!errors.webhookUrl}
+              />
+              {errors.webhookUrl && (
+                <p id="url-err" className="mt-1 text-xs text-red-400" role="alert">{errors.webhookUrl}</p>
+              )}
+            </div>
             <button
               type="button"
               onClick={handleHashUrl}
@@ -240,6 +274,9 @@ export function CreateSubscriptionForm({ onSubmit }: Props) {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2">
+          {errors.submit && (
+            <p className="w-full text-xs text-red-400 text-center" role="alert">{errors.submit}</p>
+          )}
           <button type="submit" disabled={loading} className="btn-primary flex-1 justify-center">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
             {loading ? "Creating…" : "Create Subscription"}

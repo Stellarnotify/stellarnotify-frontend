@@ -9,6 +9,9 @@
   html {
     scroll-behavior: smooth;
   }
+  body {
+    overflow-x: hidden; /* Prevent horizontal scroll on mobile */
+  }
   ::selection {
     background-color: theme("colors.brand.DEFAULT");
     color: white;
@@ -41,9 +44,16 @@
 
 @layer components {
   .card {
-    @apply rounded-xl border bg-gray-900 p-6 shadow-lg;
+    @apply rounded-xl border bg-gray-900 shadow-lg;
     background-color: rgb(var(--bg-card));
     border-color: rgb(var(--border-primary));
+    padding: 1rem;
+  }
+  
+  @media (min-width: 640px) {
+    .card {
+      padding: 1.5rem;
+    }
   }
   .btn-primary {
     @apply inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold
@@ -67,6 +77,7 @@
     background-color: rgb(var(--bg-secondary));
     border-color: rgb(var(--border-primary));
     color: rgb(var(--text-primary));
+    min-width: 0; /* Prevent input overflow */
   }
   .input::placeholder {
     color: rgb(var(--text-tertiary));

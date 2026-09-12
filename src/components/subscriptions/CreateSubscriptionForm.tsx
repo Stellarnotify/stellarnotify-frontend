@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, forwardRef, useImperativeHandle } from "react";
 import { Plus, Loader2, X, Hash } from "lucide-react";
 import { z } from "zod";
 import { sha256Hex } from "@/lib/hash";
@@ -35,7 +35,12 @@ interface Props {
   }) => Promise<void>;
 }
 
-export function CreateSubscriptionForm({ onSubmit }: Props) {
+export interface CreateSubscriptionFormRef {
+  triggerOpen: () => void;
+}
+
+export const CreateSubscriptionForm = forwardRef<CreateSubscriptionFormRef, Props>(
+  function CreateSubscriptionForm({ onSubmit }, ref) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [hashing, setHashing] = useState(false);
@@ -49,6 +54,11 @@ export function CreateSubscriptionForm({ onSubmit }: Props) {
     endpointRef: "",
     ttlLedgers: 0,
   });
+
+  // Expose method to parent via ref
+  useImperativeHandle(ref, () => ({
+    triggerOpen: () => setOpen(true),
+  }));
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -288,4 +298,4 @@ export function CreateSubscriptionForm({ onSubmit }: Props) {
       </form>
     </div>
   );
-}
+});

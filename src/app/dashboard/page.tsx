@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
 import { useWallet } from "@/hooks/useWallet";
 import { useSubscriptions } from "@/hooks/useSubscriptions";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { SubscriptionCard } from "@/components/subscriptions/SubscriptionCard";
 import { SubscriptionSkeleton } from "@/components/subscriptions/SubscriptionSkeleton";
 import { SubscriptionSearch } from "@/components/subscriptions/SubscriptionSearch";
@@ -13,6 +14,7 @@ import { useNotifications } from "@/hooks/useSubscriptions";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { TxToast } from "@/components/ui/TxToast";
+import { KeyboardShortcutsHelp } from "@/components/ui/KeyboardShortcutsHelp";
 import type { TxToastState } from "@/components/ui/TxToast";
 import { callSubscribe, callCancel, callPause, callResume, callRenew } from "@/lib/stellar";
 import { Wallet, Bell, Loader2 } from "lucide-react";
@@ -24,6 +26,29 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const { data: notifications } = useNotifications(selectedId);
   const [toast, setToast] = useState<TxToastState | null>(null);
+  const createFormRef = useRef<{ triggerOpen: () => void } | null>(null);
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts([
+    {
+      key: "n",
+      description: "Create new subscription",
+      action: () => {
+        if (address) {
+          createFormRef.current?.triggerOpen();
+        }
+      },
+    },
+    {
+      key: "r",
+      description: "Refresh subscriptions",
+      action: () => {
+        if (address) {
+          refetch();
+        }
+      },
+    },
+  ], !!address); // Only enable when wallet is connected
 
   // Filter subscriptions based on search query
   const filteredSubs = useMemo(() => {
@@ -132,7 +157,7 @@ export default function DashboardPage() {
         </div>
         <div className="flex items-center gap-2">
           <RegisterEndpointForm ownerAddress={address} />
-          <CreateSubscriptionForm onSubmit={handleCreate} />
+          <CreateSubscriptionForm ref={createFormRef} onSubmit={handleCreate} />
         </div>
       </div>
 
@@ -212,6 +237,7 @@ export default function DashboardPage() {
         </section>
       </div>
       <TxToast toast={toast} onDismiss={() => setToast(null)} />
+      <KeyboardShortcutsHelp />
     </div>
   );
 }
